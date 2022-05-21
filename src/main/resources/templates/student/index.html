@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="../../static/css/bootstrap.css">
+    <link rel="shortcut icon" href="../../static/img/idea.ico"/>
+    <link rel="bookmark" href="../../static/img/idea.ico"/>
+    <script src="../../static/js/http_cdn.static.runoob.com_libs_jquery_2.1.1_jquery.js"></script>
+    <script src="../../static/js/http_cdn.static.runoob.com_libs_bootstrap_3.3.7_js_bootstrap.js"></script>
+    <script src="../../static/js/http_cdn.jsdelivr.net_npm_vue_dist_vue.js"></script>
+    <script src="../../static/js/http_unpkg.com_axios_dist_axios.js"></script>
+    <script src="../../../static/js/getValue.js"></script>
+    <meta charset="UTF-8">
+    <title>首页</title>
+    <style>
+        .go-top {
+            position: fixed;
+            margin: 400px 50px 20px 990px;
+            bottom: 10%;
+            z-index: 100;
+            width: 20px;
+            background: rgba(167, 5, 65, 0.38);
+            color: #fff;
+            padding: .5rem;
+            border-radius: .5rem;
+            font-size: .5rem;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="container">
+        <div class="float-right"><a class="go-top d-none d-sm-block" href="javascript:scroll(0,0)">返回顶部</a> </div>
+    </div>
+    <div class="row clearfix"  id="index" style="margin-top: 20px">
+        <div class="well">
+            <button class="btn btn-primary" @click="getCourses">查看所有课程</button>
+            <button class="btn btn-primary" @click="to_select_page">查看已选</button>
+        </div>
+        <div class="col-md-6">
+            <div :class="is_select[index] ? 'panel panel-success' : 'panel panel-info'" v-for="(course, index) in courses" v-show="course.cosNow < course.cosAll" style="width: 1000px">
+                <div class="panel-heading">
+                    <p class="panel-title" style="font-size: 20px">
+                        <i><b>
+                        {{ course.cosName }}
+                        </b></i>
+                    </p>
+                </div>
+                <div class="panel-body">
+                    <div style="float: left">
+                        <img :src="'../../static/img/' + course.cosFile + '.jpg'" class="media-object" style="width:150px;height:150px" :alt="course.cosName">
+                    </div>
+                    <div style="float: right; width: 750px">
+                        <p style="font-size: 30px"><b>{{ '教师: ' + course.cosTchName }}</b></p>
+                        <p><i>{{ course.cosDcp }}</i></p>
+                        <p>{{ "课程总容量：" + course.cosAll + "            已选人数：" + course.cosNow }}</p>
+                        <button :class="is_select[index] ? 'btn btn-danger' : 'btn btn-primary'" @click="is_select[index] ? cancel_course(course, index) : select_course(course, index)" :id="course.cosId">{{ is_select[index] ? '退课' : '选课' }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const vue = new Vue({
+        el: "#index",
+        data: {
+            courses: {},
+            is_select: []
+        },
+        methods: {
+            getCourses() {
+                const that = this;
+                const token = getValue('token');
+                axios.get("/student/courses", {
+                    params: {
+                        token
+                    }
+                }).then(res => {
+                    that.courses = res.data.result
+                });
+                axios.get("/student/is_select", {
+                    params: {
+                        token
+                    }
+                }).then(res => {
+                    that.is_select = res.data.result
+                });
+            },
+            select_course(course, index) {
+                const token = getValue('token');
+                const that = this;
+                axios.post('/student/select/' + course.cosId, {}, {
+                    params: {
+                        token
+                    }
+                }).then(res => {
+                    if (!res.data.status) {
+                        window.alert(res.data.message)
+                    }
+                    else {
+                        that.courses[index].cosNow++;
+                        Vue.set(that.is_select, index, true);
+                    }
+                })
+            },
+            cancel_course(course, index) {
+                const token = getValue('token');
+                const that = this;
+                axios.post('/student/cancel/' + course.cosId, {}, {
+                    params: {
+                        token
+                    }
+                }).then(res => {
+                    if (!res.data.status) {
+                        window.alert(res.data.message)
+                    }
+                    else {
+                        that.courses[index].cosNow--;
+                        Vue.set(that.is_select, index, false);
+                    }
+                })
+
+            },
+            to_select_page() {
+                window.open('/student/s_courses?token=' + getValue('token'));
+            },
+            test() {
+                console.log(this.is_select);
+                console.log(this.courses);
+                console.log(this.courses[0])
+            }
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="../../static/css/bootstrap.css">
+    <link rel="shortcut icon" href="../../static/img/idea.ico"/>
+    <link rel="bookmark" href="../../static/img/idea.ico"/>
+    <script src="../../static/js/http_cdn.static.runoob.com_libs_jquery_2.1.1_jquery.js"></script>
+    <script src="../../static/js/http_cdn.static.runoob.com_libs_bootstrap_3.3.7_js_bootstrap.js"></script>
+    <script src="../../static/js/http_cdn.jsdelivr.net_npm_vue_dist_vue.js"></script>
+    <script src="../../static/js/http_unpkg.com_axios_dist_axios.js"></script>
+    <script src="../../../static/js/getValue.js"></script>
+    <meta charset="UTF-8">
+    <title>已选课程</title>
+</head>
+<body>
+<div class="container">
+    <div class="clearfix row" id="table">
+        <div class="well" style="margin-top: 50px">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="panel-primary">
+                        <tr>
+                            <td>课程编号</td>
+                            <td>课程名称</td>
+                            <td>老师编号</td>
+                            <td>教学老师</td>
+                            <td>课程描述</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="course in select_courses">
+                            <td>{{ course.cosId }}</td>
+                            <td>{{ course.cosName }}</td>
+                            <td>{{ course.cosTch }}</td>
+                            <td>{{ course.cosTchName }}</td>
+                            <td>{{ course.cosDcp }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const vue = new Vue({
+        el: "table",
+        data() {
+            return {
+                select_courses: []
+            }
+        },
+        created: function () {
+            const that = this;
+            const token = getValue('token');
+            axios.get("/student/select_courses", {
+                params: {
+                    token
+                }
+            }).then(res => {
+                that.select_courses = res.data.result;
+                console.log(1);
+            });
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="language_code">
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="../static/css/bootstrap.css">
+    <link rel="shortcut icon" href="../static/img/idea.ico"/>
+    <link rel="bookmark" href="../static/img/idea.ico"/>
+    <script src="../static/js/http_cdn.static.runoob.com_libs_jquery_2.1.1_jquery.js"></script>
+    <script src="../static/js/http_cdn.static.runoob.com_libs_bootstrap_3.3.7_js_bootstrap.js"></script>
+    <script src="../static/js/http_cdn.jsdelivr.net_npm_vue_dist_vue.js"></script>
+    <script src="../static/js/http_unpkg.com_axios_dist_axios.js"></script>
+    <title>登录</title>
+</head>
+<body>
+<div class="container">
+    <div class="row clearfix col-md-offset-3" id=app style="background:rgba(255,255,255,0); margin-top: 70px">
+        <h1 class="col-md-offset-1">
+            {{ title }}
+        </h1>
+        <br>
+        <div class="col-md-12">
+            <form class="form-horizontal" id="login_form" role="form">
+                <div class="form-group">
+                    <label for="stuId" class="col-sm-2 control-label">学号</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" name="stuId" id="stuId" style="width:300px;" placeholder="请输入你的学号"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="pwd" class="col-sm-2 control-label">密码</label>
+                    <div class="col-sm-10">
+                        <input type="password" class="form-control" name="pwd" id="pwd" style="width:300px;" placeholder="请输入你的密码"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button type="button" class="btn btn-primary" @click="checkLogin">登录</button>
+                        <button type="reset" class="btn btn-default col-md-offset-1">清空</button>
+                    </div>
+                </div>
+            </form>
+            <div class="alert alert-danger alert-dismissable" v-show="isShow" style="width: 600px">
+                <button type="button" class="close" aria-hidden="true" @click="hide">
+                    &times;
+                </button>
+                错误！请检查学号和密码。
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const app = new Vue({
+        el: "#app",
+        data: {
+            title: "欢迎使用学生选课系统",
+            isShow: false,
+            text: ""
+        },
+        methods: {
+            checkLogin() {
+                const stuId = document.getElementById('stuId').value;
+                const pwd = document.getElementById('pwd').value;
+                if (stuId.length === 0) {
+                    this.isShow = true;
+                    this.text = "请输入你的学号";
+                } else if (pwd.length === 0) {
+                    this.isShow = true;
+                    this.text = "请输入你的密码";
+                } else if (!(/^\d+$/.test(stuId)) || stuId.length !== 6) {
+                    this.isShow = true;
+                    this.text = "请输入正确的学号";
+                } else {
+                    this.isShow = false;
+                    this.doLogin(stuId, pwd);
+                }
+            },
+            doLogin: function (stuId, pwd) {
+                axios.post('/login/do', {
+                    stuId: stuId,
+                    pwd: pwd
+                }).then(
+                    res => {
+                        if (res.data.status) {
+                            window.location.href = "/student/index" + "?token=" + res.data.message;
+                        } else {
+                            this.isShow = true;
+                            this.text = res.data.message;
+                        }
+                    }
+                )
+            },
+            hide: function () {
+                this.isShow = false;
+            }
+        }
+    });
+</script>
+</body>
+
+</html>
